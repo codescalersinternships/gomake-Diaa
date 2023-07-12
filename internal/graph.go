@@ -28,7 +28,6 @@ func (d *DependencyGraph) SetTargetToCommands(targCommands CommandMap) {
 	d.targetToCommands = targCommands
 }
 
-
 func (d *DependencyGraph) HasCircularDependency() error {
 
 	visited := make(map[string]bool)
@@ -66,12 +65,12 @@ func (d *DependencyGraph) CheckCyclicPath(node string, visited, pathNodes map[st
 func (d *DependencyGraph) CheckMissingDependencies() []string {
 	missingDeps := make([]string, 0)
 
-	for target, deps := range d.adjacencyList {
+	for _, deps := range d.adjacencyList {
 		for _, dep := range deps {
 			_, ok := d.adjacencyList[dep]
 			if !ok {
 
-				missingDeps = append(missingDeps, fmt.Sprintf("%s -> %s", target, dep))
+				missingDeps = append(missingDeps, dep)
 			}
 		}
 	}
@@ -115,11 +114,15 @@ func (d *DependencyGraph) ExecTargetKCommands(target string) error {
 	}
 
 	for _, command := range commands {
+		execQuietly := false
 		if command[0] == '@' {
-			fmt.Println(command)
+			execQuietly = true
 			command = command[1:]
 		}
+		if !execQuietly {
 
+			fmt.Println(command)
+		}
 		err := CMD_Exec(command)
 		if err != nil {
 			return err

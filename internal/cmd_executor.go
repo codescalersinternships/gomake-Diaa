@@ -1,16 +1,48 @@
 package makefile
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"os/exec"
+	"strings"
+	"bufio"
+)
 
 func CMD_Exec(command string) error {
-	// gomakeExec, err := exec.LookPath("gomake")
+	cmdWords := strings.Split(command, " ")
+	binary := cmdWords[0]
 
-	// if err!=nil{
-	// 	return err
-	// }
+	path, err := exec.LookPath(binary)
 
-	// cmd:=exec.Command(gomakeExec, command)
+	if err != nil {
+		return err
+	}
 
-	fmt.Println(command)
+	cmd := exec.Command(path, strings.Join(cmdWords[1:], " "))
+
+	if errors.Is(cmd.Err, exec.ErrDot) {
+		cmd.Err = nil
+	}
+
+	stdout, err := cmd.StdoutPipe()
+    if err != nil {
+        return err
+    }
+
+	if err = cmd.Start(); err != nil {
+        return err
+    }
+
+	scanner := bufio.NewScanner(stdout)
+    for scanner.Scan() {
+        fmt.Println(scanner.Text())
+    }
+    if err = scanner.Err(); err != nil {
+        return err
+    }
+
+	if err := cmd.Wait(); err != nil {
+        return err
+    }
 	return nil
 }

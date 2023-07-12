@@ -45,7 +45,7 @@ func main() {
 
 	// check missing deps
 	if misDep := depGraph.CheckMissingDependencies(); len(misDep) != 0 {
-		fmt.Fprintf(os.Stderr, "error missing dependencies: %s\n", strings.Join(misDep, ", "))
+		fmt.Fprintf(os.Stderr, "missing dependencies: '%s'\n", strings.Join(misDep, ", "))
 		os.Exit(1)
 	}
 
@@ -83,7 +83,3 @@ func SearchArray[T comparable](arr []T, target T) (bool, int) {
 	}
 	return false, -1
 }
-
-// always has the filename
-// detect cycles always , crash if there is any cycle
-// one target
