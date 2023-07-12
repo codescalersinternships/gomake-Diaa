@@ -85,28 +85,28 @@ func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
 
 	visited := make(map[string]bool)
 
-	return d.ExecTasks(target, visited)
+	return d.ExecuteTasksInDependencyOrder(target, visited)
 
 }
 
-func (d *DependencyGraph) ExecTasks(target string, visited map[string]bool) error {
+func (d *DependencyGraph) ExecuteTasksInDependencyOrder(target string, visited map[string]bool) error {
 
 	visited[target] = true
 
 	for _, child := range d.adjacencyList[target] {
 		if !visited[child] {
-			if err := d.ExecTasks(child, visited); err != nil {
+			if err := d.ExecuteTasksInDependencyOrder(child, visited); err != nil {
 				return err
 			}
 		}
 	}
 
 	// Exec commands of the leaf target
-	return d.ExecTargetKCommands(target)
+	return d.ExecuteCommandsForTargetK(target)
 
 }
 
-func (d *DependencyGraph) ExecTargetKCommands(target string) error {
+func (d *DependencyGraph) ExecuteCommandsForTargetK(target string) error {
 	commands := d.targetToCommands[target]
 
 	if len(commands) == 0 {
