@@ -74,12 +74,3 @@ func ParseCommand() (string, string, error) {
 
 	return *filePath, target, nil
 }
-
-func SearchArray[T comparable](arr []T, target T) (bool, int) {
-	for idx, value := range arr {
-		if value == target {
-			return true, idx
-		}
-	}
-	return false, -1
-}
