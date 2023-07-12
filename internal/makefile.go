@@ -45,8 +45,8 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 
 		if isTarget {
 
-			if _,ok :=adjList[target];ok{
-				return nil,nil, fmt.Errorf("duplicate target '%s'",target)
+			if _, ok := adjList[target]; ok {
+				fmt.Printf("Warning: overriding recipe for target '%s'\n", target)
 			}
 			// make the graph
 			currentTarget = target
