@@ -11,8 +11,8 @@ type Graph = map[string][]string
 type CommandMap = map[string][]string
 
 type DependencyGraph struct {
-	adjacencyList    map[string][]string
-	targetToCommands map[string][]string
+	adjacencyList    Graph
+	targetToCommands CommandMap
 }
 
 func NewDependencyGraph() *DependencyGraph {
