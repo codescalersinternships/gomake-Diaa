@@ -16,10 +16,10 @@ Options:
   -f FILE`
 
 func main() {
-	filePath, target, err := ParseCommand()
+	filePath, target, err := ParseInputCommand()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error parsing command: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error parsing command: %v", err)
 		fmt.Println(HelpMessage)
 		os.Exit(1)
 	}
@@ -42,10 +42,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "execution error: %v\n", err)
 		os.Exit(1)
 	}
-
 }
 
-func ParseCommand() (string, string, error) {
+func ParseInputCommand() (string, string, error) {
 	filePath := flag.String("f", "", "name of the file to be explored")
 
 	flag.Parse()
