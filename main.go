@@ -19,7 +19,7 @@ func main() {
 	filePath, target, err := ParseInputCommand()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error parsing command: %v", err)
+		fmt.Fprintf(os.Stderr, "error parsing command: %v\n", err)
 		fmt.Println(HelpMessage)
 		os.Exit(1)
 	}
@@ -46,17 +46,16 @@ func main() {
 
 func ParseInputCommand() (string, string, error) {
 	filePath := flag.String("f", "", "name of the file to be explored")
-
+	target := flag.String("t", "", "target you want to execute")
 	flag.Parse()
 
-	if len(flag.Args()) != 1 {
+	if *target == "" {
 		return "", "", errors.New("please specify a single target")
 	}
-	target := flag.Args()[0]
 
 	if *filePath == "" {
 		*filePath = "Makefile"
 	}
 
-	return *filePath, target, nil
+	return *filePath, *target, nil
 }

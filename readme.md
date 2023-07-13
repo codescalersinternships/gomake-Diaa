@@ -37,12 +37,13 @@ $ cd bin
 ## Usage
 
 ```go
-$ ./gomake [options] [target]
+$ ./gomake [options] -t [target]
 ```
 
 ### Options
 
 - -f FILE: Specify the path to the Makefile. If not specified, the default path Makefile will be used.
+- target: target you want to execute
 
 ## Features
 - **Target ordering:** GoMake orders the targets based on their dependencies, ensuring that each target is executed only after its dependencies are completed.
