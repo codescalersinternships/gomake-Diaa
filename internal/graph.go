@@ -5,7 +5,11 @@ import (
 	"fmt"
 )
 
-var TargetDoesnotExistErr = errors.New("target error:")
+var (
+	ErrTargetDoesnotExist  = errors.New("target error")
+	ErrCycleDetected       = errors.New("circular dependency detected")
+	ErrTargetHasNoCommands = errors.New("gomake: Nothing to be done")
+)
 
 type Graph = map[string][]string
 type CommandMap = map[string][]string
@@ -28,7 +32,7 @@ func (d *DependencyGraph) SetTargetToCommands(targCommands CommandMap) {
 	d.targetToCommands = targCommands
 }
 
-func (d *DependencyGraph) HasCircularDependency() error {
+func (d *DependencyGraph) CheckCircularDependency() error {
 
 	visited := make(map[string]bool)
 	pathNodes := make(map[string]bool)
@@ -53,7 +57,7 @@ func (d *DependencyGraph) CheckCyclicPath(node string, visited, pathNodes map[st
 			return d.CheckCyclicPath(child, visited, pathNodes)
 		} else if pathNodes[child] {
 			// cycle detected
-			return fmt.Errorf("circular dependency detected between '%s' -> '%s'", node, child)
+			return fmt.Errorf("%w between '%s' -> '%s'", ErrCycleDetected, node, child)
 		}
 	}
 
@@ -80,37 +84,37 @@ func (d *DependencyGraph) CheckMissingDependencies() []string {
 func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
 
 	if _, ok := d.adjacencyList[target]; !ok {
-		return fmt.Errorf("%v target %s does not exist", TargetDoesnotExistErr, target)
+		return fmt.Errorf("%w: 'target '%s' does not exist'", ErrTargetDoesnotExist, target)
 	}
 
 	visited := make(map[string]bool)
 
-	return d.ExecuteTasksInDependencyOrder(target, visited)
+	return d.executeTasksInDependencyOrder(target, visited)
 
 }
 
-func (d *DependencyGraph) ExecuteTasksInDependencyOrder(target string, visited map[string]bool) error {
+func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited map[string]bool) error {
 
 	visited[target] = true
 
 	for _, child := range d.adjacencyList[target] {
 		if !visited[child] {
-			if err := d.ExecuteTasksInDependencyOrder(child, visited); err != nil {
+			if err := d.executeTasksInDependencyOrder(child, visited); err != nil {
 				return err
 			}
 		}
 	}
 
 	// Exec commands of the leaf target
-	return d.ExecuteCommandsForTargetK(target)
+	return d.executeCommandsForTargetK(target)
 
 }
 
-func (d *DependencyGraph) ExecuteCommandsForTargetK(target string) error {
+func (d *DependencyGraph) executeCommandsForTargetK(target string) error {
 	commands := d.targetToCommands[target]
 
 	if len(commands) == 0 {
-		return fmt.Errorf("gomake: Nothing to be done for %s", target)
+		return fmt.Errorf("%w for %s", ErrTargetHasNoCommands, target)
 	}
 
 	for _, command := range commands {

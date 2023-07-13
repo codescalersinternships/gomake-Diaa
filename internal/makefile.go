@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var InvalidFormatErr = errors.New("invalid format:")
+var ErrInvalidFormat = errors.New("invalid format")
 
 func ReadMakefile(filePath string) (Graph, CommandMap, error) {
 
@@ -37,11 +37,11 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 		lineNum++
 		line := scanner.Text()
 
-		if IsEmpty(line) || IsComment(line) {
+		if isEmpty(line) || isComment(line) {
 			continue
 		}
 
-		target, deps, isTarget := ExtractTargetAndDeps(line)
+		target, deps, isTarget := extractTargetAndDeps(line)
 
 		if isTarget {
 
@@ -58,7 +58,7 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 			continue
 		}
 
-		command, isCommand := ExtractCommand(line)
+		command, isCommand := extractCommand(line)
 
 		//command belongs to target
 		if isCommand && currentTarget != "" {
@@ -69,11 +69,11 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 		isGlobalCommand := isCommand && currentTarget == ""
 
 		if isGlobalCommand {
-			return nil, nil, fmt.Errorf("%v global command at line %d\n", InvalidFormatErr, lineNum)
+			return nil, nil, fmt.Errorf("%w: global command at line %d", ErrInvalidFormat, lineNum)
 
 		} else {
 			// not comment. not command. not target. then invalid format
-			return nil, nil, fmt.Errorf("%v invalid format at line ", lineNum)
+			return nil, nil, fmt.Errorf("%w at line %d", ErrInvalidFormat, lineNum)
 		}
 	}
 
@@ -85,7 +85,7 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 
 }
 
-func ExtractTargetAndDeps(line string) (string, []string, bool) {
+func extractTargetAndDeps(line string) (string, []string, bool) {
 
 	line = strings.Trim(line, " ")
 
@@ -111,7 +111,7 @@ func ExtractTargetAndDeps(line string) (string, []string, bool) {
 	return "", nil, false
 }
 
-func ExtractCommand(line string) (string, bool) {
+func extractCommand(line string) (string, bool) {
 	line = strings.Trim(line, " ")
 
 	if strings.HasPrefix(line, "\t") {
@@ -120,14 +120,12 @@ func ExtractCommand(line string) (string, bool) {
 	return "", false
 }
 
-func IsEmpty(line string) bool {
+func isEmpty(line string) bool {
 	return len(strings.TrimSpace(line)) == 0
 }
 
-func IsComment(line string) bool {
+func isComment(line string) bool {
 	line = strings.TrimSpace(line)
-	if line[0] == '#' {
-		return true
-	}
-	return false
+
+	return line[0] == '#'
 }
