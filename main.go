@@ -4,9 +4,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	makefile "gomake/internal"
 	"os"
-	"strings"
+
+	makefile "github.com/codescalersinternships/gomake-Diaa/internal"
 )
 
 var ErrMissingMakefileArg = fmt.Errorf("make: option requires an argument -- 'f'")
@@ -35,19 +35,6 @@ func main() {
 
 	depGraph.SetAdjacencyList(adjList)
 	depGraph.SetTargetToCommands(targToCmds)
-
-	// check cycles
-	if err = depGraph.HasCircularDependency(); err != nil {
-
-		fmt.Fprintf(os.Stderr, "cycle error: %v\n", err)
-		os.Exit(1)
-	}
-
-	// check missing deps
-	if misDep := depGraph.CheckMissingDependencies(); len(misDep) != 0 {
-		fmt.Fprintf(os.Stderr, "missing dependencies: '%s'\n", strings.Join(misDep, ", "))
-		os.Exit(1)
-	}
 
 	err = depGraph.ExecuteTargetKAndItsDeps(target)
 

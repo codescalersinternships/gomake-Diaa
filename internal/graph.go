@@ -3,6 +3,7 @@ package makefile
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -20,8 +21,8 @@ type DependencyGraph struct {
 }
 
 func NewDependencyGraph() *DependencyGraph {
-	return &(DependencyGraph{adjacencyList: make(map[string][]string),
-		targetToCommands: make(map[string][]string)})
+	return &(DependencyGraph{adjacencyList: make(Graph),
+		targetToCommands: make(CommandMap)})
 }
 
 func (d *DependencyGraph) SetAdjacencyList(adjList Graph) {
@@ -32,14 +33,14 @@ func (d *DependencyGraph) SetTargetToCommands(targCommands CommandMap) {
 	d.targetToCommands = targCommands
 }
 
-func (d *DependencyGraph) CheckCircularDependency() error {
+func (d *DependencyGraph) checkCircularDependency() error {
 
 	visited := make(map[string]bool)
 	pathNodes := make(map[string]bool)
 
 	for node := range d.adjacencyList {
 		if !visited[node] {
-			if err := d.CheckCyclicPath(node, visited, pathNodes); err != nil {
+			if err := d.checkCyclicPath(node, visited, pathNodes); err != nil {
 				return err
 			}
 		}
@@ -47,14 +48,14 @@ func (d *DependencyGraph) CheckCircularDependency() error {
 	}
 	return nil
 }
-func (d *DependencyGraph) CheckCyclicPath(node string, visited, pathNodes map[string]bool) error {
+func (d *DependencyGraph) checkCyclicPath(node string, visited, pathNodes map[string]bool) error {
 
 	visited[node] = true
 	pathNodes[node] = true
 
 	for _, child := range d.adjacencyList[node] {
 		if !visited[child] {
-			return d.CheckCyclicPath(child, visited, pathNodes)
+			return d.checkCyclicPath(child, visited, pathNodes)
 		} else if pathNodes[child] {
 			// cycle detected
 			return fmt.Errorf("%w between '%s' -> '%s'", ErrCycleDetected, node, child)
@@ -66,7 +67,7 @@ func (d *DependencyGraph) CheckCyclicPath(node string, visited, pathNodes map[st
 	return nil
 }
 
-func (d *DependencyGraph) CheckMissingDependencies() []string {
+func (d *DependencyGraph) checkMissingDependencies() []string {
 	missingDeps := make([]string, 0)
 
 	for _, deps := range d.adjacencyList {
@@ -83,55 +84,64 @@ func (d *DependencyGraph) CheckMissingDependencies() []string {
 
 func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
 
-	if _, ok := d.adjacencyList[target]; !ok {
+	if err := d.checkCircularDependency(); err != nil {
+		return fmt.Errorf("cycle error: %w", err)
+	}
+
+	if misDep := d.checkMissingDependencies(); len(misDep) != 0 {
+		return fmt.Errorf("missing dependencies: '%s'", strings.Join(misDep, ", "))
+	}
+
+	if _,ok := d.targetToCommands[target]; !ok {
 		return fmt.Errorf("%w: 'target '%s' does not exist'", ErrTargetDoesnotExist, target)
 	}
 
 	visited := make(map[string]bool)
 
-	return d.executeTasksInDependencyOrder(target, visited)
+	_, err := d.executeTasksInDependencyOrder(target, visited)
+	return err
 
 }
 
-func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited map[string]bool) error {
+func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited map[string]bool) (string, error) {
 
 	visited[target] = true
+	finalOutput := ""
 
 	for _, child := range d.adjacencyList[target] {
 		if !visited[child] {
-			if err := d.executeTasksInDependencyOrder(child, visited); err != nil {
-				return err
+			cmdOutput, err := d.executeTasksInDependencyOrder(child, visited)
+			if err != nil {
+				return "", err
 			}
+			finalOutput += cmdOutput
 		}
 	}
 
 	// Exec commands of the leaf target
-	return d.executeCommandsForTargetK(target)
+	cmdOutput, err := d.executeCommandsForTargetK(target)
+	finalOutput += cmdOutput
+
+	return finalOutput, err
 
 }
 
-func (d *DependencyGraph) executeCommandsForTargetK(target string) error {
+func (d *DependencyGraph) executeCommandsForTargetK(target string) (string, error) {
 	commands := d.targetToCommands[target]
 
 	if len(commands) == 0 {
-		return fmt.Errorf("%w for %s", ErrTargetHasNoCommands, target)
+		return "", fmt.Errorf("%w for %s", ErrTargetHasNoCommands, target)
 	}
 
+	finalOutput := ""
 	for _, command := range commands {
-		execQuietly := false
-		if command[0] == '@' {
-			execQuietly = true
-			command = command[1:]
-		}
-		if !execQuietly {
 
-			fmt.Println(command)
-		}
-		err := execCommand(command)
+		commandOutput, err := execCommand(command)
 		if err != nil {
-			return err
+			return "", err
 		}
+		finalOutput += commandOutput
 
 	}
-	return nil
+	return finalOutput, nil
 }
