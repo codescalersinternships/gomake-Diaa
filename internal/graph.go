@@ -127,7 +127,7 @@ func (d *DependencyGraph) executeCommandsForTargetK(target string) error {
 
 			fmt.Println(command)
 		}
-		err := CMD_Exec(command)
+		err := execCommand(command)
 		if err != nil {
 			return err
 		}

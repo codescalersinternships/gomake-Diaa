@@ -8,7 +8,7 @@ import (
 	"bufio"
 )
 
-func CMD_Exec(command string) error {
+func execCommand(command string) error {
 	cmdWords := strings.Split(command, " ")
 	binary := cmdWords[0]
 
@@ -21,7 +21,7 @@ func CMD_Exec(command string) error {
 	cmd := exec.Command(path, strings.Join(cmdWords[1:], " "))
 
 	if errors.Is(cmd.Err, exec.ErrDot) {
-		cmd.Err = nil
+		return cmd.Err
 	}
 
 	stdout, err := cmd.StdoutPipe()
