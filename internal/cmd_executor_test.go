@@ -1,7 +1,6 @@
 package makefile
 
 import (
-
 	"testing"
 
 	"github.com/stretchr/testify/assert"

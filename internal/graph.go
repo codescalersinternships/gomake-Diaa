@@ -92,7 +92,7 @@ func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
 		return fmt.Errorf("missing dependencies: '%s'", strings.Join(misDep, ", "))
 	}
 
-	if _,ok := d.targetToCommands[target]; !ok {
+	if _, ok := d.targetToCommands[target]; !ok {
 		return fmt.Errorf("%w: 'target '%s' does not exist'", ErrTargetDoesnotExist, target)
 	}
 

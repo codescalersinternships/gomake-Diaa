@@ -34,9 +34,9 @@ func TestReadMakefile(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
-			os.WriteFile(path.Join(dir,tc.filePath), []byte{}, 0644)
+			os.WriteFile(path.Join(dir, tc.filePath), []byte{}, 0644)
 
-			_, _, err := ReadMakefile(path.Join(dir, tc.filePath,tc.pathValidation))
+			_, _, err := ReadMakefile(path.Join(dir, tc.filePath, tc.pathValidation))
 			if tc.pathValidation == "" {
 				assert.Nil(t, err, tc.failureMessage)
 			} else {
