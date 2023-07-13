@@ -51,7 +51,7 @@ func ParseCommand() (string, string, error) {
 	flag.Parse()
 
 	if len(flag.Args()) != 1 {
-		return "", "", errors.New("Please specify a single target.")
+		return "", "", errors.New("please specify a single target")
 	}
 	target := flag.Args()[0]
 
