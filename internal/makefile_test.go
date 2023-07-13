@@ -3,6 +3,7 @@ package makefile
 import (
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,66 +47,67 @@ func TestReadMakefile(t *testing.T) {
 	}
 }
 
-// func TestParseMakefile(t *testing.T) {
-// 	t.Parallel()
+func TestParseMakefile(t *testing.T) {
+	t.Parallel()
 
-// 	testCases := []struct {
-// 		name           string
-// 		fileContent    string
-// 		expectedError  error
-// 		expectedAdjList Graph
-// 		expectedTargsCmds CommandMap
-// 		failureMessage string
-// 	}{
-// 		{
-// 			name: "Valid format",
-// 			fileContent: `run: build
-// 	echo run
-// # comment
-// build:
-// 	echo build`,
-// 			expectedError:  nil,
-// 			expectedAdjList: Graph{
-// 				"run":[]string{"build"},
-// 				"build":[] string{},
-// 			},
-// 			expectedTargsCmds: CommandMap{
-// 				"run":"echo run",
-// 				"build":"echo build",
-// 			},
-// 			failureMessage: "got error while it's a valid format",
-// 		},
-// 		{
-// 			name: "invalid format because of global command",
-// 			fileContent: `
-// echo test
-// run:
-// 	echo run`,
-// 			expectedError:  ErrInvalidFormat,
-// 			expectedAdjList: nil,
-// 			expectedTargsCmds: nil,
-// 			failureMessage: "failed to detect global command",
-// 		},
-// 		{
-// 			name: "invalid format because of \t before target",
-// 			fileContent: `
-// 	run:
-// 	echo run`,
-// 			expectedError:  ErrInvalidFormat,
-// 			expectedAdjList: nil,
-// 			expectedTargsCmds: nil,
-// 			failureMessage: "failed to detect \t before target",
-// 		},
-// 	}
+	testCases := []struct {
+		name              string
+		fileContent       string
+		expectedError     error
+		expectedAdjList   Graph
+		expectedTargsCmds CommandMap
+		failureMessage    string
+	}{
+		{
+			name: "Valid format",
+			fileContent: `run: build
+	echo run
+# comment
+build:
+	echo build`,
+			expectedError: nil,
+			expectedAdjList: Graph{
+				"run":   []string{"build"},
+				"build": []string{},
+			},
+			expectedTargsCmds: CommandMap{
+				"run":   []string{"echo run"},
+				"build": []string{"echo build"},
+			},
+			failureMessage: "got error while it's a valid format",
+		},
+		{
+			name: "invalid format because of global command",
+			fileContent: `
+echo test
+run:
+	echo run`,
+			expectedError:     ErrInvalidFormat,
+			expectedAdjList:   nil,
+			expectedTargsCmds: nil,
+			failureMessage:    "failed to detect global command",
+		},
+		{
+			name: "invalid format because of \t before target",
+			fileContent: `
+	run:
+	echo run`,
+			expectedError:     ErrInvalidFormat,
+			expectedAdjList:   nil,
+			expectedTargsCmds: nil,
+			failureMessage:    "failed to detect \t before target",
+		},
+	}
 
-// 	for _,tc := range testCases{
-// 		t.Run(tc.name,func(t *testing.T) {
-// 			reader := strings.NewReader(tc.fileContent)
-// 			gotAdjList,gotTargsCmds,err:= ParseMakefile(reader)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			reader := strings.NewReader(tc.fileContent)
+			gotAdjList, gotTargsCmds, err := ParseMakefile(reader)
 
-// 			assert.ErrorIs(t,err,tc.expectedError,tc.failureMessage)
+			assert.ErrorIs(t, err, tc.expectedError, tc.failureMessage)
+			assert.Equal(t, tc.expectedAdjList, gotAdjList, tc.failureMessage)
+			assert.Equal(t, tc.expectedTargsCmds, gotTargsCmds, tc.failureMessage)
+		})
+	}
 
-// 		})
-// 	}
-
-// }
+}
