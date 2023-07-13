@@ -3,7 +3,6 @@ package makefile
 import (
 	"os"
 	"path"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -104,7 +103,8 @@ func TestReadMakefile(t *testing.T) {
 // 			reader := strings.NewReader(tc.fileContent)
 // 			gotAdjList,gotTargsCmds,err:= ParseMakefile(reader)
 
-// 			assert.
+// 			assert.ErrorIs(t,err,tc.expectedError,tc.failureMessage)
+
 // 		})
 // 	}
 
