@@ -41,7 +41,8 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 			continue
 		}
 
-		target, deps, isTarget := extractTargetAndDeps(line)
+		target, deps := extractTargetAndDeps(line)
+		isTarget := target != ""
 
 		if isTarget {
 
@@ -85,7 +86,7 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 
 }
 
-func extractTargetAndDeps(line string) (string, []string, bool) {
+func extractTargetAndDeps(line string) (string, []string) {
 
 	line = strings.Trim(line, " ")
 
@@ -106,9 +107,9 @@ func extractTargetAndDeps(line string) (string, []string, bool) {
 		if len(depsString) > 0 {
 			deps = strings.Split(depsString, " ")
 		}
-		return target, deps, true
+		return target, deps
 	}
-	return "", nil, false
+	return "", nil
 }
 
 func extractCommand(line string) (string, bool) {

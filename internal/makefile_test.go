@@ -111,3 +111,40 @@ run:
 	}
 
 }
+
+func TestExtractTargetAndDeps(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name            string
+		inputLine       string
+		expTarget       string
+		expDependencies []string
+		failureMessage  string
+	}{
+		{
+			name:            "Input not target",
+			inputLine:       "echo run",
+			expTarget:       "",
+			expDependencies: nil,
+			failureMessage:  "got target while input line is not target",
+		},
+		{
+			name:            "Input is a target",
+			inputLine:       "run: build",
+			expTarget:       "run",
+			expDependencies: []string{"build"},
+			failureMessage:  "got not target while it's target",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotTarget, gotDeps := extractTargetAndDeps(tc.inputLine)
+
+			assert.Equal(t, tc.expTarget, gotTarget, tc.failureMessage)
+			assert.ElementsMatch(t, tc.expDependencies, gotDeps, tc.failureMessage)
+		})
+	}
+
+}
