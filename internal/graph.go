@@ -7,29 +7,33 @@ import (
 )
 
 var (
-	ErrTargetDoesnotExist  = errors.New("target error")
-	ErrCycleDetected       = errors.New("circular dependency detected")
-	ErrTargetHasNoCommands = errors.New("gomake: Nothing to be done")
+	errTargetDoesnotExist  = errors.New("missig target")
+	errCycleDetected       = errors.New("circular dependency detected")
+	errTargetHasNoCommands = errors.New("gomake: Nothing to be done")
 )
 
-type Graph = map[string][]string
-type CommandMap = map[string][]string
+type graph = map[string][]string
+type commandMap = map[string][]string
 
+// DependencyGraph represents a graph of dependencies between targets in a Makefile.
 type DependencyGraph struct {
-	adjacencyList    Graph
-	targetToCommands CommandMap
+	adjacencyList    graph
+	targetToCommands commandMap
 }
 
+// NewDependencyGraph Creates a new empty dependency graph.
 func NewDependencyGraph() *DependencyGraph {
-	return &(DependencyGraph{adjacencyList: make(Graph),
-		targetToCommands: make(CommandMap)})
+	return &(DependencyGraph{adjacencyList: make(graph),
+		targetToCommands: make(commandMap)})
 }
 
-func (d *DependencyGraph) SetAdjacencyList(adjList Graph) {
+// SetAdjacencyList sets the adjacency list of a dependencyGraph.
+func (d *DependencyGraph) SetAdjacencyList(adjList graph) {
 	d.adjacencyList = adjList
 }
 
-func (d *DependencyGraph) SetTargetToCommands(targCommands CommandMap) {
+// SetTargetToCommands sets the targetToCommands Map of a dependencyGraph
+func (d *DependencyGraph) SetTargetToCommands(targCommands commandMap) {
 	d.targetToCommands = targCommands
 }
 
@@ -58,7 +62,7 @@ func (d *DependencyGraph) checkCyclicPath(node string, visited, pathNodes map[st
 			return d.checkCyclicPath(child, visited, pathNodes)
 		} else if pathNodes[child] {
 			// cycle detected
-			return fmt.Errorf("%w between '%s' -> '%s'", ErrCycleDetected, node, child)
+			return fmt.Errorf("%w between '%s' -> '%s'", errCycleDetected, node, child)
 		}
 	}
 
@@ -82,6 +86,7 @@ func (d *DependencyGraph) checkMissingDependencies() []string {
 	return missingDeps
 }
 
+// ExecuteTargetKAndItsDeps executes the specified target and all of its dependencies in the correct order.
 func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
 
 	if err := d.checkCircularDependency(); err != nil {
@@ -93,7 +98,7 @@ func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
 	}
 
 	if _, ok := d.targetToCommands[target]; !ok {
-		return fmt.Errorf("%w: 'target '%s' does not exist'", ErrTargetDoesnotExist, target)
+		return fmt.Errorf("target '%s' does not exist: %w", target, errTargetDoesnotExist)
 	}
 
 	visited := make(map[string]bool)
@@ -130,7 +135,7 @@ func (d *DependencyGraph) executeCommandsForTargetK(target string) (string, erro
 	commands := d.targetToCommands[target]
 
 	if len(commands) == 0 {
-		return "", fmt.Errorf("%w for %s", ErrTargetHasNoCommands, target)
+		return "", fmt.Errorf("%w for %s", errTargetHasNoCommands, target)
 	}
 
 	finalOutput := ""

@@ -9,18 +9,16 @@ import (
 	makefile "github.com/codescalersinternships/gomake-Diaa/internal"
 )
 
-var ErrMissingMakefileArg = fmt.Errorf("make: option requires an argument -- 'f'")
-
-const HelpMessage = `Usage: make [options] [target] ...
+const helpMessage = `Usage: make [options] [target] ...
 Options:
   -f FILE`
 
 func main() {
-	filePath, target, err := ParseInputCommand()
+	filePath, target, err := parseInputCommand()
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error parsing command: %v\n", err)
-		fmt.Println(HelpMessage)
+		fmt.Println(helpMessage)
 		os.Exit(1)
 	}
 
@@ -39,12 +37,13 @@ func main() {
 	err = depGraph.ExecuteTargetKAndItsDeps(target)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "execution error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 }
-
-func ParseInputCommand() (string, string, error) {
+// ParseInputCommand reads command line arguments and returns the file path and target to be executed.
+// If the file path is not specified. its default value is 'Makefile'
+func parseInputCommand() (string, string, error) {
 	filePath := flag.String("f", "", "name of the file to be explored")
 	target := flag.String("t", "", "target you want to execute")
 	flag.Parse()

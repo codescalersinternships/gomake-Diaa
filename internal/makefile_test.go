@@ -54,8 +54,8 @@ func TestParseMakefile(t *testing.T) {
 		name              string
 		fileContent       string
 		expectedError     error
-		expectedAdjList   Graph
-		expectedTargsCmds CommandMap
+		expectedAdjList   graph
+		expectedTargsCmds commandMap
 		failureMessage    string
 	}{
 		{
@@ -66,11 +66,11 @@ func TestParseMakefile(t *testing.T) {
 build:
 	echo build`,
 			expectedError: nil,
-			expectedAdjList: Graph{
+			expectedAdjList: graph{
 				"run":   []string{"build"},
 				"build": []string{},
 			},
-			expectedTargsCmds: CommandMap{
+			expectedTargsCmds: commandMap{
 				"run":   []string{"echo run"},
 				"build": []string{"echo build"},
 			},
@@ -82,7 +82,7 @@ build:
 echo test
 run:
 	echo run`,
-			expectedError:     ErrInvalidFormat,
+			expectedError:     errInvalidFormat,
 			expectedAdjList:   nil,
 			expectedTargsCmds: nil,
 			failureMessage:    "failed to detect global command",
@@ -92,7 +92,7 @@ run:
 			fileContent: `
 	run:
 	echo run`,
-			expectedError:     ErrInvalidFormat,
+			expectedError:     errInvalidFormat,
 			expectedAdjList:   nil,
 			expectedTargsCmds: nil,
 			failureMessage:    "failed to detect \t before target",
@@ -102,7 +102,7 @@ run:
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			reader := strings.NewReader(tc.fileContent)
-			gotAdjList, gotTargsCmds, err := ParseMakefile(reader)
+			gotAdjList, gotTargsCmds, err := parseMakefile(reader)
 
 			assert.ErrorIs(t, err, tc.expectedError, tc.failureMessage)
 			assert.Equal(t, tc.expectedAdjList, gotAdjList, tc.failureMessage)

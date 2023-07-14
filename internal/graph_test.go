@@ -21,7 +21,7 @@ func TestSetAdjacencyList(t *testing.T) {
 	t.Parallel()
 	dg := NewDependencyGraph()
 
-	adjList := Graph{
+	adjList := graph{
 		"run":   []string{"build"},
 		"build": []string{},
 	}
@@ -36,7 +36,7 @@ func TestSetTargetToCommands(t *testing.T) {
 
 	dg := NewDependencyGraph()
 
-	targetToCommands := CommandMap{
+	targetToCommands := commandMap{
 		"run":     []string{"npm run start", "npm run start:dev"},
 		"install": []string{"npm install"},
 	}
@@ -51,20 +51,20 @@ func TestHasCircularDependency(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        Graph
+		adjList        graph
 		expectedError  error
 		failureMessage string
 	}{
 		{
 			name: "Circular dependencies exist",
-			adjList: Graph{
+			adjList: graph{
 				"run":   []string{"build"},
 				"build": []string{"run"},
-			}, expectedError: ErrCycleDetected,
+			}, expectedError: errCycleDetected,
 			failureMessage: "fail to detect circular dependency in dependency graph with cycles",
 		}, {
 			name: "No circular dependencies",
-			adjList: Graph{
+			adjList: graph{
 				"run":   []string{"build"},
 				"build": []string{},
 			},
@@ -93,13 +93,13 @@ func TestCheckMissingDependencies(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        Graph
+		adjList        graph
 		expected       []string
 		failureMessage string
 	}{
 		{
 			name: "Has no missing dependencies",
-			adjList: Graph{
+			adjList: graph{
 				"run":   []string{"build"},
 				"build": []string{},
 			},
@@ -107,7 +107,7 @@ func TestCheckMissingDependencies(t *testing.T) {
 			failureMessage: "got missing dependencies while shouldn't",
 		}, {
 			name: "Has missing dependencies",
-			adjList: Graph{
+			adjList: graph{
 				"run": []string{"build", "make"},
 			},
 			expected:       []string{"build", "make"},
@@ -132,23 +132,23 @@ func TestExecuteTargetKAndItsDeps(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        Graph
-		targetCommands CommandMap
+		adjList        graph
+		targetCommands commandMap
 		failureMessage string
 		expectedError  error
 	}{
 		{
 			name:           "Target doesn't exist",
-			adjList:        Graph{},
-			targetCommands: CommandMap{},
+			adjList:        graph{},
+			targetCommands: commandMap{},
 			failureMessage: "fail to detect that target doesn't exist",
-			expectedError:  ErrTargetDoesnotExist,
+			expectedError:  errTargetDoesnotExist,
 		}, {
 			name: "Target exist, should exec commands",
-			adjList: Graph{
+			adjList: graph{
 				"run": []string{},
 			},
-			targetCommands: CommandMap{
+			targetCommands: commandMap{
 				"run": []string{"echo test"},
 			},
 			failureMessage: "fail to execute commands while it shouldn't",
@@ -176,19 +176,19 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		adjList  Graph
-		commands CommandMap
+		adjList  graph
+		commands commandMap
 		target   string
 		expected string
 	}{
 		{
-			adjList: Graph{
+			adjList: graph{
 				"run":   []string{"build", "print"},
 				"build": []string{"exec"},
 				"exec":  []string{},
 				"print": []string{"exec"},
 			},
-			commands: CommandMap{
+			commands: commandMap{
 				"run":   []string{"echo run"},
 				"build": []string{"echo build"},
 				"exec":  []string{"echo exec"},
@@ -227,29 +227,29 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        Graph
-		targetCommands CommandMap
+		adjList        graph
+		targetCommands commandMap
 		failureMessage string
 		expectedError  error
 		target         string
 	}{
 		{
 			name: "Target has no commands",
-			adjList: Graph{
+			adjList: graph{
 				"run": []string{},
 			},
-			targetCommands: CommandMap{
+			targetCommands: commandMap{
 				"run": []string{},
 			},
 			failureMessage: "failed to detect that there is no commands",
-			expectedError:  ErrTargetHasNoCommands,
+			expectedError:  errTargetHasNoCommands,
 			target:         "run",
 		}, {
 			name: "Target has commands",
-			adjList: Graph{
+			adjList: graph{
 				"run": []string{},
 			},
-			targetCommands: CommandMap{
+			targetCommands: commandMap{
 				"run": []string{"echo test"},
 			},
 			failureMessage: "failed to detect the exists command",

@@ -9,9 +9,10 @@ import (
 	"strings"
 )
 
-var ErrInvalidFormat = errors.New("invalid format")
+var errInvalidFormat = errors.New("invalid format")
 
-func ReadMakefile(filePath string) (Graph, CommandMap, error) {
+// ReadMakefile reads a Makefile from the specified file path and returns its dependency graph and command map.
+func ReadMakefile(filePath string) (graph, commandMap, error) {
 
 	file, err := os.Open(filePath)
 
@@ -21,14 +22,14 @@ func ReadMakefile(filePath string) (Graph, CommandMap, error) {
 
 	defer file.Close()
 
-	return ParseMakefile(file)
+	return parseMakefile(file)
 
 }
 
-func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
+func parseMakefile(r io.Reader) (graph, commandMap, error) {
 
-	adjList := make(Graph)
-	targetsCommands := make(CommandMap)
+	adjList := make(graph)
+	targetsCommands := make(commandMap)
 	scanner := bufio.NewScanner(r)
 
 	lineNum := 1
@@ -70,12 +71,11 @@ func ParseMakefile(r io.Reader) (Graph, CommandMap, error) {
 		isGlobalCommand := isCommand && currentTarget == ""
 
 		if isGlobalCommand {
-			return nil, nil, fmt.Errorf("%w: global command at line %d", ErrInvalidFormat, lineNum)
-
-		} else {
-			// not comment. not command. not target. then invalid format
-			return nil, nil, fmt.Errorf("%w at line %d", ErrInvalidFormat, lineNum)
+			return nil, nil, fmt.Errorf("%w: global command at line %d", errInvalidFormat, lineNum)
 		}
+		// not comment. not command. not target. then invalid format
+		return nil, nil, fmt.Errorf("%w at line %d", errInvalidFormat, lineNum)
+
 	}
 
 	if err := scanner.Err(); err != nil {
