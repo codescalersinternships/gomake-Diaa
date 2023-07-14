@@ -41,6 +41,7 @@ func main() {
 		os.Exit(1)
 	}
 }
+
 // ParseInputCommand reads command line arguments and returns the file path and target to be executed.
 // If the file path is not specified. its default value is 'Makefile'
 func parseInputCommand() (string, string, error) {
