@@ -9,7 +9,7 @@ import (
 	makefile "github.com/codescalersinternships/gomake-Diaa/internal"
 )
 
-const helpMessage = `Usage: make [options] [target] ...
+const helpMessage = `Usage: make [options] -t [target]
 Options:
   -f FILE`
 
