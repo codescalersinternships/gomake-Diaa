@@ -28,7 +28,7 @@ func main() {
 
 	depGraph := makefile.NewDependencyGraph(adjacencyList,targetToCommands)
 
-	err = depGraph.ExecuteTargetKAndItsDeps(target)
+	err = depGraph.ExecuteTargetAndItsDeps(target)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)

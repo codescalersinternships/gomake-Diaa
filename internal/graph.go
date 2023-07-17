@@ -78,7 +78,7 @@ func (d *DependencyGraph) checkMissingDependencies() []string {
 }
 
 // ExecuteTargetKAndItsDeps executes the specified target and all of its dependencies in the correct order.
-func (d *DependencyGraph) ExecuteTargetKAndItsDeps(target string) error {
+func (d *DependencyGraph) ExecuteTargetAndItsDeps(target string) error {
 
 	if err := d.checkCircularDependency(); err != nil {
 		return fmt.Errorf("cycle error: %w", err)

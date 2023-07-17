@@ -133,7 +133,7 @@ func TestExecuteTargetKAndItsDeps(t *testing.T) {
 			
 			dg := NewDependencyGraph(tc.adjacencyList,tc.targetCommands)
 
-			err := dg.ExecuteTargetKAndItsDeps("run")
+			err := dg.ExecuteTargetAndItsDeps("run")
 
 			assert.ErrorIs(t, err, tc.expectedError, tc.failureMessage)
 		})
