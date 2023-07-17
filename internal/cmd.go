@@ -27,7 +27,7 @@ func execCommand(command string) (string, error) {
 	path, err := exec.LookPath(binary)
 
 	if err != nil {
-		return "", fmt.Errorf("binary does not exist:%w",err)
+		return "", fmt.Errorf("binary does not exist:%w", err)
 	}
 
 	cmd := exec.Command(path, strings.Join(cmdWords[1:], " "))
@@ -38,11 +38,11 @@ func execCommand(command string) (string, error) {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return "", fmt.Errorf("pipe error: %w",err)
+		return "", fmt.Errorf("pipe error: %w", err)
 	}
 
 	if err = cmd.Start(); err != nil {
-		return "", fmt.Errorf("error starting command: %w",err)
+		return "", fmt.Errorf("error starting command: %w", err)
 	}
 
 	scanner := bufio.NewScanner(stdout)
@@ -51,11 +51,11 @@ func execCommand(command string) (string, error) {
 		cmdOutput += fmt.Sprint(scanner.Text(), "\n")
 	}
 	if err = scanner.Err(); err != nil {
-		return "", err
+		return "", fmt.Errorf("scanner err: %w", err)
 	}
 
 	if err := cmd.Wait(); err != nil {
-		return "", err
+		return "", fmt.Errorf("error waiting the cmd execution: %w", err)
 	}
 	return cmdOutput, nil
 }
