@@ -26,10 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	depGraph := makefile.NewDependencyGraph()
-
-	depGraph.SetAdjacencyList(adjacencyList)
-	depGraph.SetTargetToCommands(targetToCommands)
+	depGraph := makefile.NewDependencyGraph(adjacencyList,targetToCommands)
 
 	err = depGraph.ExecuteTargetKAndItsDeps(target)
 

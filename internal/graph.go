@@ -22,20 +22,11 @@ type DependencyGraph struct {
 }
 
 // NewDependencyGraph Creates a new empty dependency graph.
-func NewDependencyGraph() *DependencyGraph {
-	return &(DependencyGraph{adjacencyList: make(graph),
-		targetToCommands: make(commandMap)})
+func NewDependencyGraph(adjList graph, targTocommands commandMap) *DependencyGraph {
+	return &(DependencyGraph{adjacencyList: adjList,
+		targetToCommands: targTocommands})
 }
 
-// SetAdjacencyList sets the adjacency list of a dependencyGraph.
-func (d *DependencyGraph) SetAdjacencyList(adjList graph) {
-	d.adjacencyList = adjList
-}
-
-// SetTargetToCommands sets the targetToCommands Map of a dependencyGraph
-func (d *DependencyGraph) SetTargetToCommands(targCommands commandMap) {
-	d.targetToCommands = targCommands
-}
 
 func (d *DependencyGraph) checkCircularDependency() error {
 

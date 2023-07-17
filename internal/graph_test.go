@@ -8,7 +8,7 @@ import (
 
 func TestNewDependencyGraph(t *testing.T) {
 	t.Parallel()
-	dg := NewDependencyGraph()
+	dg := NewDependencyGraph(graph{}, commandMap{})
 
 	assert.NotNil(t, dg, "expected dependency graph to be initialized, but was nil")
 
@@ -17,54 +17,28 @@ func TestNewDependencyGraph(t *testing.T) {
 	assert.NotNil(t, dg.targetToCommands, "expected TargetToCommands to be initialized, but was nil")
 }
 
-func TestSetAdjacencyList(t *testing.T) {
-	t.Parallel()
-	dg := NewDependencyGraph()
 
-	adjList := graph{
-		"run":   []string{"build"},
-		"build": []string{},
-	}
 
-	dg.SetAdjacencyList(adjList)
-
-	assert.Equal(t, adjList, dg.adjacencyList, "fail to set adjacency list")
-}
-
-func TestSetTargetToCommands(t *testing.T) {
-	t.Parallel()
-
-	dg := NewDependencyGraph()
-
-	targetToCommands := commandMap{
-		"run":     []string{"npm run start", "npm run start:dev"},
-		"install": []string{"npm install"},
-	}
-
-	dg.SetTargetToCommands(targetToCommands)
-
-	assert.Equal(t, targetToCommands, dg.targetToCommands, "fail to set target to commands")
-}
 
 func TestHasCircularDependency(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name           string
-		adjList        graph
+		adjacencyList        graph
 		expectedError  error
 		failureMessage string
 	}{
 		{
 			name: "Circular dependencies exist",
-			adjList: graph{
+			adjacencyList: graph{
 				"run":   []string{"build"},
 				"build": []string{"run"},
 			}, expectedError: errCycleDetected,
 			failureMessage: "fail to detect circular dependency in dependency graph with cycles",
 		}, {
 			name: "No circular dependencies",
-			adjList: graph{
+			adjacencyList: graph{
 				"run":   []string{"build"},
 				"build": []string{},
 			},
@@ -76,8 +50,7 @@ func TestHasCircularDependency(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			dg := NewDependencyGraph()
-			dg.SetAdjacencyList(tc.adjList)
+			dg := NewDependencyGraph(tc.adjacencyList,commandMap{})
 
 			err := dg.checkCircularDependency()
 
@@ -93,13 +66,13 @@ func TestCheckMissingDependencies(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        graph
+		adjacencyList        graph
 		expected       []string
 		failureMessage string
 	}{
 		{
 			name: "Has no missing dependencies",
-			adjList: graph{
+			adjacencyList: graph{
 				"run":   []string{"build"},
 				"build": []string{},
 			},
@@ -107,7 +80,7 @@ func TestCheckMissingDependencies(t *testing.T) {
 			failureMessage: "got missing dependencies while shouldn't",
 		}, {
 			name: "Has missing dependencies",
-			adjList: graph{
+			adjacencyList: graph{
 				"run": []string{"build", "make"},
 			},
 			expected:       []string{"build", "make"},
@@ -116,9 +89,8 @@ func TestCheckMissingDependencies(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := NewDependencyGraph()
-
-			dg.SetAdjacencyList(tc.adjList)
+			
+			dg := NewDependencyGraph(tc.adjacencyList,commandMap{})
 
 			got := dg.checkMissingDependencies()
 
@@ -132,20 +104,20 @@ func TestExecuteTargetKAndItsDeps(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        graph
+		adjacencyList        graph
 		targetCommands commandMap
 		failureMessage string
 		expectedError  error
 	}{
 		{
 			name:           "Target doesn't exist",
-			adjList:        graph{},
+			adjacencyList:        graph{},
 			targetCommands: commandMap{},
 			failureMessage: "fail to detect that target doesn't exist",
 			expectedError:  errTargetDoesnotExist,
 		}, {
 			name: "Target exist, should exec commands",
-			adjList: graph{
+			adjacencyList: graph{
 				"run": []string{},
 			},
 			targetCommands: commandMap{
@@ -158,11 +130,8 @@ func TestExecuteTargetKAndItsDeps(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := NewDependencyGraph()
-
-			dg.SetAdjacencyList(tc.adjList)
-
-			dg.SetTargetToCommands(tc.targetCommands)
+			
+			dg := NewDependencyGraph(tc.adjacencyList,tc.targetCommands)
 
 			err := dg.ExecuteTargetKAndItsDeps("run")
 
@@ -176,19 +145,19 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		adjList  graph
-		commands commandMap
+		adjacencyList  graph
+		targetsCommands commandMap
 		target   string
 		expected string
 	}{
 		{
-			adjList: graph{
+			adjacencyList: graph{
 				"run":   []string{"build", "print"},
 				"build": []string{"exec"},
 				"exec":  []string{},
 				"print": []string{"exec"},
 			},
-			commands: commandMap{
+			targetsCommands: commandMap{
 				"run":   []string{"echo run"},
 				"build": []string{"echo build"},
 				"exec":  []string{"echo exec"},
@@ -210,9 +179,7 @@ run
 	for idx, tc := range testCases {
 		t.Run("should execute commands in right order", func(t *testing.T) {
 
-			dg := NewDependencyGraph()
-			dg.SetAdjacencyList(tc.adjList)
-			dg.SetTargetToCommands(tc.commands)
+			dg := NewDependencyGraph(tc.adjacencyList,tc.targetsCommands)
 
 			visited := make(map[string]bool)
 			got, err := dg.executeTasksInDependencyOrder(tc.target, visited)
@@ -259,9 +226,7 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := NewDependencyGraph()
-
-			dg.SetTargetToCommands(tc.targetCommands)
+			dg := NewDependencyGraph(graph{},tc.targetCommands)
 
 			_, err := dg.executeCommandsForTargetK(tc.target)
 
