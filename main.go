@@ -11,7 +11,8 @@ import (
 
 const helpMessage = `Usage: make [options] -t [target]
 Options:
-  -f FILE`
+  -f FILE <FILE is the filepath of the makefile>
+  -t TARGET <TARGET is the target you want to execute>`
 
 func main() {
 	filePath, target, err := parseInputCommand()
