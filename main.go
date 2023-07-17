@@ -9,21 +9,17 @@ import (
 	makefile "github.com/codescalersinternships/gomake-Diaa/internal"
 )
 
-const helpMessage = `Usage: make [options] -t [target]
-Options:
-  -f FILE <FILE is the filepath of the makefile>
-  -t TARGET <TARGET is the target you want to execute>`
 
 func main() {
 	filePath, target, err := parseInputCommand()
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error parsing command: %v\n", err)
-		fmt.Println(helpMessage)
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	adjList, targToCmds, err := makefile.ReadMakefile(filePath)
+	adjacencyList, targetToCommands, err := makefile.ReadMakefile(filePath)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -32,8 +28,8 @@ func main() {
 
 	depGraph := makefile.NewDependencyGraph()
 
-	depGraph.SetAdjacencyList(adjList)
-	depGraph.SetTargetToCommands(targToCmds)
+	depGraph.SetAdjacencyList(adjacencyList)
+	depGraph.SetTargetToCommands(targetToCommands)
 
 	err = depGraph.ExecuteTargetKAndItsDeps(target)
 
