@@ -9,7 +9,7 @@ import (
 var (
 	errTargetDoesnotExist  = errors.New("missig target")
 	errCycleDetected       = errors.New("circular dependency detected")
-	errTargetHasNoCommands = errors.New("gomake: Nothing to be done")
+	errTargetHasNoCommands = errors.New("nothing to be done")
 )
 
 type graph = map[string][]string

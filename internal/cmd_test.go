@@ -35,7 +35,7 @@ func TestExecCommand(t *testing.T) {
 			got, err := execCommand(tc.command)
 
 			if err != nil {
-				assert.NotNil(t, err, "expecting binary error but got no error")
+				return
 			} else {
 				assert.Equal(t, tc.expected, got, "output doesn't match")
 			}
