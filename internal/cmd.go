@@ -22,15 +22,8 @@ func execCommand(command string) (string, error) {
 		cmdOutput += fmt.Sprint(command, "\n")
 	}
 	cmdWords := strings.Split(command, " ")
-	binary := cmdWords[0]
 
-	path, err := exec.LookPath(binary)
-
-	if err != nil {
-		return "", fmt.Errorf("binary does not exist:%w", err)
-	}
-
-	cmd := exec.Command(path, strings.Join(cmdWords[1:], " "))
+	cmd := exec.Command(cmdWords[0], strings.Join(cmdWords[1:], " "))
 
 	if errors.Is(cmd.Err, exec.ErrDot) {
 		return "", cmd.Err
