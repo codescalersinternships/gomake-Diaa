@@ -17,7 +17,6 @@ func execCommand(command string) error {
 	}
 	cmdWords := strings.Split(command, " ")
 
-
 	cmd := exec.Command(cmdWords[0], cmdWords[1:]...)
 
 	if errors.Is(cmd.Err, exec.ErrDot) {

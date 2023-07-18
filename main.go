@@ -9,7 +9,6 @@ import (
 	makefile "github.com/codescalersinternships/gomake-Diaa/internal"
 )
 
-
 func main() {
 	filePath, target, err := parseInputCommand()
 
@@ -26,7 +25,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	depGraph := makefile.NewDependencyGraph(adjacencyList,targetToCommands)
+	depGraph := makefile.NewDependencyGraph(adjacencyList, targetToCommands)
 
 	err = depGraph.ExecuteTargetAndItsDeps(target)
 
