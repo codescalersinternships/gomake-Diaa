@@ -38,14 +38,14 @@ func main() {
 // ParseInputCommand reads command line arguments and returns the file path and target to be executed.
 // If the file path is not specified. its default value is 'Makefile'
 func parseInputCommand() (string, string, error) {
-	var filePath string
+	var filePath, target string
 	flag.StringVar(&filePath, "f", "Makefile", "name of the file to be explored")
-	target := flag.String("t", "", "target you want to execute")
+	flag.StringVar(&target, "t", "", "target you want to execute")
 	flag.Parse()
 
-	if *target == "" {
+	if target == "" {
 		return "", "", errors.New("please specify a single target")
 	}
 
-	return filePath, *target, nil
+	return filePath, target, nil
 }
