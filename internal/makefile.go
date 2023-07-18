@@ -28,7 +28,7 @@ func ReadMakefile(filePath string) (graph, commandMap, error) {
 
 func parseMakefile(r io.Reader) (graph, commandMap, error) {
 
-	adjList := make(graph)
+	adjacencyList := make(graph)
 	targetsCommands := make(commandMap)
 	scanner := bufio.NewScanner(r)
 
@@ -47,15 +47,15 @@ func parseMakefile(r io.Reader) (graph, commandMap, error) {
 
 			target, deps := extractTargetAndDeps(line)
 
-			if _, ok := adjList[target]; ok {
+			if _, ok := adjacencyList[target]; ok {
 				fmt.Printf("Warning: overriding recipe for target '%s'\n", target)
 			}
 			// make the graph
 			currentTarget = target
-			adjList[currentTarget] = make([]string, 0)
+			adjacencyList[currentTarget] = make([]string, 0)
 			targetsCommands[currentTarget] = make([]string, 0)
 
-			adjList[currentTarget] = deps
+			adjacencyList[currentTarget] = deps
 
 			continue
 		}
@@ -82,7 +82,7 @@ func parseMakefile(r io.Reader) (graph, commandMap, error) {
 		return nil, nil, err
 	}
 
-	return adjList, targetsCommands, nil
+	return adjacencyList, targetsCommands, nil
 
 }
 

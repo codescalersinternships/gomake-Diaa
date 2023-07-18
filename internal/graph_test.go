@@ -138,7 +138,7 @@ func TestExecuteTargetAndItsDeps(t *testing.T) {
 
 }
 
-func TestExecuteTasksInDependencyOrder(t *testing.T) {
+func TestGetTasksOrder(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -171,13 +171,13 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 			dg := NewDependencyGraph(tc.adjacencyList, tc.targetsCommands)
 
 			visited := make(map[string]bool)
-			gotOrder := dg.executeTasksInDependencyOrder(tc.target, visited)
+			gotOrder := dg.getTasksOrder(tc.target, visited)
 
 			assert.Equal(t, tc.expectedOrder, gotOrder, "failed to execute in the right dependencies order in test #%d", idx+1)
 		})
 	}
 }
-func TestExecuteCommandsForTargetK(t *testing.T) {
+func TestExecuteCommandsForTarget(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -216,7 +216,7 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			dg := NewDependencyGraph(graph{}, tc.targetCommands)
 
-			err := dg.executeCommandsForTargetK(tc.target)
+			err := dg.executeCommandsForTarget(tc.target)
 
 			assert.ErrorIs(t, err, tc.expectedError, tc.failureMessage)
 

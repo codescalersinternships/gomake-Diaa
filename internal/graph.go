@@ -22,9 +22,9 @@ type DependencyGraph struct {
 }
 
 // NewDependencyGraph Creates a new empty dependency graph.
-func NewDependencyGraph(adjList graph, targTocommands commandMap) *DependencyGraph {
-	return &(DependencyGraph{adjacencyList: adjList,
-		targetToCommands: targTocommands})
+func NewDependencyGraph(adjacencyList graph, targetToCommands commandMap) *DependencyGraph {
+	return &(DependencyGraph{adjacencyList: adjacencyList,
+		targetToCommands: targetToCommands})
 }
 
 func (d *DependencyGraph) checkCircularDependency() error {
@@ -93,10 +93,10 @@ func (d *DependencyGraph) ExecuteTargetAndItsDeps(target string) error {
 
 	visited := make(map[string]bool)
 
-	targetsOrder := d.executeTasksInDependencyOrder(target, visited)
+	targetsOrder := d.getTasksOrder(target, visited)
 
 	for _, target := range targetsOrder {
-		err := d.executeCommandsForTargetK(target)
+		err := d.executeCommandsForTarget(target)
 		if err != nil {
 			return err
 		}
@@ -106,14 +106,14 @@ func (d *DependencyGraph) ExecuteTargetAndItsDeps(target string) error {
 
 }
 
-func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited map[string]bool) []string {
+func (d *DependencyGraph) getTasksOrder(target string, visited map[string]bool) []string {
 
 	visited[target] = true
 	targetsOrder := []string{}
 
 	for _, child := range d.adjacencyList[target] {
 		if !visited[child] {
-			targetsOrder = append(targetsOrder, d.executeTasksInDependencyOrder(child, visited)...)
+			targetsOrder = append(targetsOrder, d.getTasksOrder(child, visited)...)
 		}
 	}
 
@@ -124,7 +124,7 @@ func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited m
 
 }
 
-func (d *DependencyGraph) executeCommandsForTargetK(target string) error {
+func (d *DependencyGraph) executeCommandsForTarget(target string) error {
 	commands := d.targetToCommands[target]
 
 	if len(commands) == 0 {

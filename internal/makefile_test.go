@@ -1,6 +1,7 @@
 package makefile
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -57,12 +58,12 @@ func TestParseMakefile(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name              string
-		fileContent       string
-		expectedError     error
-		expectedAdjList   graph
-		expectedTargsCmds commandMap
-		failureMessage    string
+		name                    string
+		fileContent             string
+		expectedError           error
+		expectedAdjacencyList   graph
+		expectedTargetsCommands commandMap
+		failureMessage          string
 	}{
 		{
 			name: "Valid format",
@@ -72,11 +73,11 @@ func TestParseMakefile(t *testing.T) {
 build:
 	echo build`,
 			expectedError: nil,
-			expectedAdjList: graph{
+			expectedAdjacencyList: graph{
 				"run":   []string{"build"},
 				"build": []string{},
 			},
-			expectedTargsCmds: commandMap{
+			expectedTargetsCommands: commandMap{
 				"run":   []string{"echo run"},
 				"build": []string{"echo build"},
 			},
@@ -88,31 +89,32 @@ build:
 echo test
 run:
 	echo run`,
-			expectedError:     errInvalidFormat,
-			expectedAdjList:   nil,
-			expectedTargsCmds: nil,
-			failureMessage:    "failed to detect global command",
+			expectedError:           errInvalidFormat,
+			expectedAdjacencyList:   nil,
+			expectedTargetsCommands: nil,
+			failureMessage:          "failed to detect global command",
 		},
 		{
 			name: "invalid format because of \t before target",
 			fileContent: `
 	run:
 	echo run`,
-			expectedError:     errInvalidFormat,
-			expectedAdjList:   nil,
-			expectedTargsCmds: nil,
-			failureMessage:    "failed to detect \t before target",
+			expectedError:           errInvalidFormat,
+			expectedAdjacencyList:   nil,
+			expectedTargetsCommands: nil,
+			failureMessage:          "failed to detect \t before target",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			reader := strings.NewReader(tc.fileContent)
-			gotAdjList, gotTargsCmds, err := parseMakefile(reader)
+			gotAdjacencyList, gotTargetsToCommands, err := parseMakefile(reader)
 
+			fmt.Println(gotTargetsToCommands)
 			assert.ErrorIs(t, err, tc.expectedError, tc.failureMessage)
-			assert.Equal(t, tc.expectedAdjList, gotAdjList, tc.failureMessage)
-			assert.Equal(t, tc.expectedTargsCmds, gotTargsCmds, tc.failureMessage)
+			assert.Equal(t, tc.expectedAdjacencyList, gotAdjacencyList, tc.failureMessage)
+			assert.Equal(t, tc.expectedTargetsCommands, gotTargetsToCommands, tc.failureMessage)
 		})
 	}
 

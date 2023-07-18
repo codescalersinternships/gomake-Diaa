@@ -1,5 +1,5 @@
 build:
-	go build -o gomake2
+	go build -o gomake
 test: 
 	go test ./...
 
