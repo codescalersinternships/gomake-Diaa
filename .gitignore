@@ -1,0 +1,9 @@
+makefile.json
+
+gomake
+
+bin
+
+.vscode/
+
+bin/
