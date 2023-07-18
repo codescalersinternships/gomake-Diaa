@@ -9,36 +9,32 @@ import (
 func TestExecCommand(t *testing.T) {
 
 	testCases := []struct {
-		name     string
-		command  string
-		expected string
+		name         string
+		command      string
+		expectingErr bool
 	}{
 		{
-			name:     "valid command with @",
-			command:  "@echo test",
-			expected: "test\n",
-		},
-		{
-			name:     "valid command without @",
-			command:  "echo test",
-			expected: "echo test\ntest\n",
-		},
-		{
-			name:    "invalid binary",
-			command: "binary test",
+			name:         "invalid binary",
+			command:      "binary test",
+			expectingErr: true,
+		}, {
+			name:         "valid binary",
+			command:      "echo test",
+			expectingErr: false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			got, err := execCommand(tc.command)
+			err := execCommand(tc.command)
 
-			if err != nil {
-				return
+			if tc.expectingErr {
+				assert.NotNil(t, err)
 			} else {
-				assert.Equal(t, tc.expected, got, "output doesn't match")
+				assert.Nil(t, err)
 			}
+
 		})
 	}
 }

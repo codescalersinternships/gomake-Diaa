@@ -14,34 +14,40 @@ func TestReadMakefile(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name           string
-		filePath       string
-		pathValidation string
-		failureMessage string
+		name              string
+		filePath          string
+		pathValidation    string
+		failureMessage    string
+		needToWriteFile   bool
+		shouldReturnError bool
 	}{
 		{
-			name:           "Invalid file path",
-			filePath:       "file",
-			pathValidation: "invalid",
-			failureMessage: "should return error no such file or directory but got a file",
+			name:              "Invalid file path",
+			filePath:          "file",
+			failureMessage:    "should return error no such file or directory but got a file",
+			shouldReturnError: true,
+			needToWriteFile:   false,
 		}, {
-			name:           "Valid file path",
-			filePath:       "Makefile",
-			pathValidation: "",
-			failureMessage: "should return nil but got error",
+			name:              "Valid file path",
+			filePath:          "Makefile",
+			failureMessage:    "should return nil but got error",
+			shouldReturnError: false,
+			needToWriteFile:   true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
-			os.WriteFile(path.Join(dir, tc.filePath), []byte{}, 0644)
+			if tc.needToWriteFile {
+				os.WriteFile(path.Join(dir, tc.filePath), []byte{}, 0644)
+			}
 
-			_, _, err := ReadMakefile(path.Join(dir, tc.filePath, tc.pathValidation))
-			if tc.pathValidation == "" {
-				assert.Nil(t, err, tc.failureMessage)
-			} else {
+			_, _, err := ReadMakefile(path.Join(dir, tc.filePath))
+			if tc.shouldReturnError {
 				assert.NotNil(t, err, tc.failureMessage)
+			} else {
+				assert.Nil(t, err, tc.failureMessage)
 			}
 		})
 	}

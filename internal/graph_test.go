@@ -1,6 +1,7 @@
 package makefile
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,15 +18,12 @@ func TestNewDependencyGraph(t *testing.T) {
 	assert.NotNil(t, dg.targetToCommands, "expected TargetToCommands to be initialized, but was nil")
 }
 
-
-
-
 func TestHasCircularDependency(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name           string
-		adjacencyList        graph
+		adjacencyList  graph
 		expectedError  error
 		failureMessage string
 	}{
@@ -50,7 +48,7 @@ func TestHasCircularDependency(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			dg := NewDependencyGraph(tc.adjacencyList,commandMap{})
+			dg := NewDependencyGraph(tc.adjacencyList, commandMap{})
 
 			err := dg.checkCircularDependency()
 
@@ -66,7 +64,7 @@ func TestCheckMissingDependencies(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjacencyList        graph
+		adjacencyList  graph
 		expected       []string
 		failureMessage string
 	}{
@@ -89,8 +87,8 @@ func TestCheckMissingDependencies(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			
-			dg := NewDependencyGraph(tc.adjacencyList,commandMap{})
+
+			dg := NewDependencyGraph(tc.adjacencyList, commandMap{})
 
 			got := dg.checkMissingDependencies()
 
@@ -104,14 +102,14 @@ func TestExecuteTargetKAndItsDeps(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjacencyList        graph
+		adjacencyList  graph
 		targetCommands commandMap
 		failureMessage string
 		expectedError  error
 	}{
 		{
 			name:           "Target doesn't exist",
-			adjacencyList:        graph{},
+			adjacencyList:  graph{},
 			targetCommands: commandMap{},
 			failureMessage: "fail to detect that target doesn't exist",
 			expectedError:  errTargetDoesnotExist,
@@ -130,8 +128,8 @@ func TestExecuteTargetKAndItsDeps(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			
-			dg := NewDependencyGraph(tc.adjacencyList,tc.targetCommands)
+
+			dg := NewDependencyGraph(tc.adjacencyList, tc.targetCommands)
 
 			err := dg.ExecuteTargetAndItsDeps("run")
 
@@ -145,10 +143,10 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		adjacencyList  graph
+		adjacencyList   graph
 		targetsCommands commandMap
-		target   string
-		expected string
+		target          string
+		expectedOrder       []string
 	}{
 		{
 			adjacencyList: graph{
@@ -164,28 +162,22 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 				"print": []string{"echo print"},
 			},
 			target: "run",
-			expected: `echo exec
-exec
-echo build
-build
-echo print
-print
-echo run
-run
-`,
+			expectedOrder: []string{"exec","build","print","run"},
+
 		},
 	}
 
 	for idx, tc := range testCases {
 		t.Run("should execute commands in right order", func(t *testing.T) {
 
-			dg := NewDependencyGraph(tc.adjacencyList,tc.targetsCommands)
+			dg := NewDependencyGraph(tc.adjacencyList, tc.targetsCommands)
 
 			visited := make(map[string]bool)
-			got, err := dg.executeTasksInDependencyOrder(tc.target, visited)
+			gotOrder := dg.executeTasksInDependencyOrder(tc.target, visited)
 
-			assert.Nil(t, err, "failed to execute commands while it shouldn't in test #%d", idx+1)
-			assert.Equal(t, tc.expected, got, "failed to execute in the right dependencies order in test #%d", idx+1)
+			fmt.Println(gotOrder)
+
+			assert.Equal(t, tc.expectedOrder, gotOrder, "failed to execute in the right dependencies order in test #%d", idx+1)
 		})
 	}
 }
@@ -226,9 +218,9 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := NewDependencyGraph(graph{},tc.targetCommands)
+			dg := NewDependencyGraph(graph{}, tc.targetCommands)
 
-			_, err := dg.executeCommandsForTargetK(tc.target)
+			err := dg.executeCommandsForTargetK(tc.target)
 
 			assert.ErrorIs(t, err, tc.expectedError, tc.failureMessage)
 

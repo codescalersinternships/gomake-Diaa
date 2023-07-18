@@ -27,7 +27,6 @@ func NewDependencyGraph(adjList graph, targTocommands commandMap) *DependencyGra
 		targetToCommands: targTocommands})
 }
 
-
 func (d *DependencyGraph) checkCircularDependency() error {
 
 	visited := make(map[string]bool)
@@ -94,50 +93,51 @@ func (d *DependencyGraph) ExecuteTargetAndItsDeps(target string) error {
 
 	visited := make(map[string]bool)
 
-	_, err := d.executeTasksInDependencyOrder(target, visited)
-	return err
+	targetsOrder := d.executeTasksInDependencyOrder(target, visited)
+
+	for _, target := range targetsOrder {
+		err := d.executeCommandsForTargetK(target)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 
 }
 
-func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited map[string]bool) (string, error) {
+func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited map[string]bool) []string {
 
 	visited[target] = true
-	finalOutput := ""
+	targetsOrder := []string{}
 
 	for _, child := range d.adjacencyList[target] {
 		if !visited[child] {
-			cmdOutput, err := d.executeTasksInDependencyOrder(child, visited)
-			if err != nil {
-				return "", err
-			}
-			finalOutput += cmdOutput
+			targetsOrder = append(targetsOrder, d.executeTasksInDependencyOrder(child, visited)...)
 		}
 	}
 
-	// Exec commands of the leaf target
-	cmdOutput, err := d.executeCommandsForTargetK(target)
-	finalOutput += cmdOutput
+	
+	targetsOrder = append(targetsOrder, target)
 
-	return finalOutput, err
+	// Exec commands of the leaf target
+	return targetsOrder
 
 }
 
-func (d *DependencyGraph) executeCommandsForTargetK(target string) (string, error) {
+func (d *DependencyGraph) executeCommandsForTargetK(target string) error {
 	commands := d.targetToCommands[target]
 
 	if len(commands) == 0 {
-		return "", fmt.Errorf("%w for %s", errTargetHasNoCommands, target)
+		return fmt.Errorf("%w for %s", errTargetHasNoCommands, target)
 	}
 
-	finalOutput := ""
 	for _, command := range commands {
 
-		commandOutput, err := execCommand(command)
+		err := execCommand(command)
 		if err != nil {
-			return "", err
+			return err
 		}
-		finalOutput += commandOutput
-
 	}
-	return finalOutput, nil
+	return nil
 }
