@@ -37,15 +37,15 @@ func parseMakefile(r io.Reader) (graph, commandMap, error) {
 	for scanner.Scan() {
 		lineNum++
 		line := scanner.Text()
+		line = strings.Trim(line, " ")
 
 		if isEmpty(line) || isComment(line) {
 			continue
 		}
 
-		target, deps := extractTargetAndDeps(line)
-		isTarget := target != ""
+		if isTarget(line) {
 
-		if isTarget {
+			target, deps := extractTargetAndDeps(line)
 
 			if _, ok := adjList[target]; ok {
 				fmt.Printf("Warning: overriding recipe for target '%s'\n", target)
@@ -60,10 +60,10 @@ func parseMakefile(r io.Reader) (graph, commandMap, error) {
 			continue
 		}
 
-		command, isCommand := extractCommand(line)
-
+		isCommand := strings.HasPrefix(line, "\t")
 		//command belongs to target
 		if isCommand && currentTarget != "" {
+			command := strings.TrimSpace(line)
 			targetsCommands[currentTarget] = append(targetsCommands[currentTarget], command)
 			continue
 		}
@@ -86,10 +86,7 @@ func parseMakefile(r io.Reader) (graph, commandMap, error) {
 
 }
 
-func extractTargetAndDeps(line string) (string, []string) {
-
-	line = strings.Trim(line, " ")
-
+func isTarget(line string) bool {
 	targetAndDeps := strings.Split(line, ":")
 	target, deps := targetAndDeps[0], targetAndDeps[1:]
 
@@ -100,25 +97,22 @@ func extractTargetAndDeps(line string) (string, []string) {
 	// invalid like target: dep1 :dep2
 	isValidFormat := len(deps) == 1
 
-	if hasNoLeadingTab && notEmptyTarget && isOneTarget && isValidFormat {
+	return hasNoLeadingTab && notEmptyTarget && isOneTarget && isValidFormat
 
-		depsString := strings.TrimSpace(deps[0])
-		deps = deps[:0]
-		if len(depsString) > 0 {
-			deps = strings.Split(depsString, " ")
-		}
-		return target, deps
-	}
-	return "", nil
 }
 
-func extractCommand(line string) (string, bool) {
-	line = strings.Trim(line, " ")
+func extractTargetAndDeps(line string) (string, []string) {
 
-	if strings.HasPrefix(line, "\t") {
-		return strings.TrimSpace(line), true
+	targetAndDeps := strings.Split(line, ":")
+	target, deps := targetAndDeps[0], targetAndDeps[1:]
+
+	depsString := strings.TrimSpace(deps[0])
+	deps = deps[:0]
+	if len(depsString) > 0 {
+		deps = strings.Split(depsString, " ")
 	}
-	return "", false
+	return target, deps
+
 }
 
 func isEmpty(line string) bool {

@@ -76,7 +76,7 @@ func (d *DependencyGraph) checkMissingDependencies() []string {
 	return missingDeps
 }
 
-// ExecuteTargetKAndItsDeps executes the specified target and all of its dependencies in the correct order.
+// ExecuteTargetAndItsDeps executes the specified target and all of its dependencies in the correct order.
 func (d *DependencyGraph) ExecuteTargetAndItsDeps(target string) error {
 
 	if err := d.checkCircularDependency(); err != nil {

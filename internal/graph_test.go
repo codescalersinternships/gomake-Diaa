@@ -1,7 +1,6 @@
 package makefile
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,7 +96,7 @@ func TestCheckMissingDependencies(t *testing.T) {
 	}
 }
 
-func TestExecuteTargetKAndItsDeps(t *testing.T) {
+func TestExecuteTargetAndItsDeps(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -146,7 +145,7 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 		adjacencyList   graph
 		targetsCommands commandMap
 		target          string
-		expectedOrder       []string
+		expectedOrder   []string
 	}{
 		{
 			adjacencyList: graph{
@@ -161,9 +160,8 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 				"exec":  []string{"echo exec"},
 				"print": []string{"echo print"},
 			},
-			target: "run",
-			expectedOrder: []string{"exec","build","print","run"},
-
+			target:        "run",
+			expectedOrder: []string{"exec", "build", "print", "run"},
 		},
 	}
 
@@ -175,8 +173,6 @@ func TestExecuteTasksInDependencyOrder(t *testing.T) {
 			visited := make(map[string]bool)
 			gotOrder := dg.executeTasksInDependencyOrder(tc.target, visited)
 
-			fmt.Println(gotOrder)
-
 			assert.Equal(t, tc.expectedOrder, gotOrder, "failed to execute in the right dependencies order in test #%d", idx+1)
 		})
 	}
@@ -186,7 +182,7 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjacencyList        graph
+		adjacencyList  graph
 		targetCommands commandMap
 		failureMessage string
 		expectedError  error

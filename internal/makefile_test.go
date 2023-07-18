@@ -118,38 +118,62 @@ run:
 
 }
 
-func TestExtractTargetAndDeps(t *testing.T) {
+func TestIsTarget(t *testing.T) {
 	t.Parallel()
+
+	testCases := []struct {
+		name           string
+		inputLine      string
+		expected       bool
+		failureMessage string
+	}{
+		{
+			name:           "Input not target",
+			inputLine:      "echo run",
+			failureMessage: "got target while input line is not target",
+			expected:       false,
+		},
+		{
+			name:           "Input is a target",
+			inputLine:      "run: build",
+			failureMessage: "got not target while it's target",
+			expected:       true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := isTarget(tc.inputLine)
+
+			assert.Equal(t, tc.expected, got, tc.failureMessage)
+		})
+	}
+
+}
+
+func TestextractTargetAndDeps(t *testing.T) {
 
 	testCases := []struct {
 		name            string
 		inputLine       string
 		expTarget       string
 		expDependencies []string
-		failureMessage  string
 	}{
 		{
-			name:            "Input not target",
-			inputLine:       "echo run",
-			expTarget:       "",
-			expDependencies: nil,
-			failureMessage:  "got target while input line is not target",
-		},
-		{
-			name:            "Input is a target",
+			name:            "test extract target and dependencies",
 			inputLine:       "run: build",
 			expTarget:       "run",
 			expDependencies: []string{"build"},
-			failureMessage:  "got not target while it's target",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotTarget, gotDeps := extractTargetAndDeps(tc.inputLine)
+			gotTarget, gotDependencies := extractTargetAndDeps(tc.inputLine)
 
-			assert.Equal(t, tc.expTarget, gotTarget, tc.failureMessage)
-			assert.ElementsMatch(t, tc.expDependencies, gotDeps, tc.failureMessage)
+			assert.ElementsMatch(t, tc.expDependencies, gotDependencies)
+
+			assert.Equal(t, tc.expTarget, gotTarget)
 		})
 	}
 
