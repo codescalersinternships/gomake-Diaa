@@ -186,7 +186,7 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		adjList        graph
+		adjacencyList        graph
 		targetCommands commandMap
 		failureMessage string
 		expectedError  error
@@ -194,7 +194,7 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 	}{
 		{
 			name: "Target has no commands",
-			adjList: graph{
+			adjacencyList: graph{
 				"run": []string{},
 			},
 			targetCommands: commandMap{
@@ -205,7 +205,7 @@ func TestExecuteCommandsForTargetK(t *testing.T) {
 			target:         "run",
 		}, {
 			name: "Target has commands",
-			adjList: graph{
+			adjacencyList: graph{
 				"run": []string{},
 			},
 			targetCommands: commandMap{

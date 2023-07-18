@@ -117,7 +117,6 @@ func (d *DependencyGraph) executeTasksInDependencyOrder(target string, visited m
 		}
 	}
 
-	
 	targetsOrder = append(targetsOrder, target)
 
 	// Exec commands of the leaf target
